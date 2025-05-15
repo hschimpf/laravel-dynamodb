@@ -8,6 +8,26 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Str;
 use Kitar\Dynamodb\Connection;
 
+/**
+ * @method self condition($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self conditionBetween($column, iterable $values, $boolean = 'and', $not = false)
+ * @method self conditionIn($column, $values, $boolean = 'and', $not = false)
+ * @method self filter($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self filterBetween($column, iterable $values, $boolean = 'and', $not = false)
+ * @method self filterIn($column, $values, $boolean = 'and', $not = false)
+ * @method self keyCondition($column, $operator = null, $value = null, $boolean = 'and')
+ * @method self keyConditionBetween($column, iterable $values, $boolean = 'and', $not = false)
+ * @method self keyConditionIn($column, $values, $boolean = 'and', $not = false)
+ * @method self orCondition($column, $operator = null, $value = null)
+ * @method self orConditionBetween($column, iterable $values)
+ * @method self orConditionIn($column, $values)
+ * @method self orFilter($column, $operator = null, $value = null)
+ * @method self orFilterBetween($column, iterable $values)
+ * @method self orFilterIn($column, $values)
+ * @method self orKeyCondition($column, $operator = null, $value = null)
+ * @method self orKeyConditionBetween($column, iterable $values)
+ * @method self orKeyConditionIn($column, $values)
+ */
 class Builder extends BaseBuilder
 {
     /**
