@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use Kitar\Dynamodb\Connection;
 
 /**
+ * @template TModel
+ *
  * @method self condition($column, $operator = null, $value = null, $boolean = 'and')
  * @method self conditionBetween($column, iterable $values, $boolean = 'and', $not = false)
  * @method self conditionIn($column, $values, $boolean = 'and', $not = false)
@@ -27,6 +29,8 @@ use Kitar\Dynamodb\Connection;
  * @method self orKeyCondition($column, $operator = null, $value = null)
  * @method self orKeyConditionBetween($column, iterable $values)
  * @method self orKeyConditionIn($column, $values)
+ *
+ * @extends BaseBuilder<TModel>
  */
 class Builder extends BaseBuilder
 {
