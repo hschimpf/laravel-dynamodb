@@ -24,14 +24,14 @@
     },
     "require": {
         "php": "^8.2",
-        "illuminate/support": "^12.0",
-        "illuminate/container": "^12.0",
-        "illuminate/database": "^12.0",
-        "illuminate/hashing": "^12.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/container": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/hashing": "^12.0|^13.0",
         "aws/aws-sdk-php": "^3.0"
     },
     "require-dev": {
-        "illuminate/auth": "^12.0",
+        "illuminate/auth": "^12.0|^13.0",
         "orchestra/testbench": "^10.0",
         "symfony/var-dumper": "^7.0",
         "vlucas/phpdotenv": "^5.0",
