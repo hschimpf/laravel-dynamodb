@@ -53,8 +53,8 @@ class Processor extends BaseProcessor
             return $response;
         }
 
-        if (! empty($response['Count']) && is_numeric($response['Count'])) {
-            return (int) $response['Count'];
+        if (is_int($response['Count'])) {
+            return $response['Count'];
         }
 
         return null;
