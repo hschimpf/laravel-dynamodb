@@ -154,6 +154,10 @@ class Connection extends BaseConnection
         return $this->client->query($params);
     }
 
+    protected function escapeString($value) {
+        return $value;
+    }
+
     /**
      * Dynamically pass methods to the connection.
      *
