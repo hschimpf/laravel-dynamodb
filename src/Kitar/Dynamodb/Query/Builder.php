@@ -9,6 +9,7 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Benchmark;
 use Illuminate\Support\Str;
 use Kitar\Dynamodb\Connection;
+use Kitar\Dynamodb\Events\DynamodbQueryExecuted;
 
 /**
  * @template TModel
@@ -720,28 +721,7 @@ class Builder extends BaseBuilder
         [$response, $time] =  Benchmark::value(fn () => $this->connection->$query_method($params));
 
         try {
-            event(new QueryExecuted(
-                sprintf('%s "%s" %s',
-                    strtoupper($query_method === 'clientQuery' ? 'query' : $query_method),
-                    $table_name.($this->index ? ' ['.$this->index.']' : ''),
-                    implode(' ', [
-                        ...(! empty($params['KeyConditionExpression']) ? ['WHERE '.$params['KeyConditionExpression']] : []),
-                        ...(! empty($params['FilterExpression']) ? ['FILTER '.$params['FilterExpression']] : []),
-                        ...(! empty($params['ProjectionExpression']) ? ['SELECT '.$params['ProjectionExpression']] : []),
-                    ]),
-                ),
-                collect($params['ExpressionAttributeNames'] + array_map(static fn ($value) => match (array_keys($value)[0]) {
-                    'S'    => $value['S'],
-                    'N'    => (float) $value['N'],
-                    'B'    => $value['B'],
-                    'BOOL' => (bool) $value['BOOL'] ? 'true' : 'false',
-                    'NULL' => 'null',
-
-                    default => null,
-                }, $params['ExpressionAttributeValues']))->dot()->toArray(),
-                $time,
-                $this->connection,
-            ));
+            event(new DynamodbQueryExecuted($this, $query_method, $table_name, $params, $time));
         } catch (\Exception) {
             // ignored
         }
