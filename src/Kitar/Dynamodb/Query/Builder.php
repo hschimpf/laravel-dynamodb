@@ -9,7 +9,6 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Benchmark;
 use Illuminate\Support\Str;
 use Kitar\Dynamodb\Connection;
-use Kitar\Dynamodb\Events\DynamodbQueryExecuted;
 
 /**
  * @template TModel
@@ -720,17 +719,48 @@ class Builder extends BaseBuilder
         // Execute.
         [$response, $time] =  Benchmark::value(fn () => $this->connection->$query_method($params));
 
-        try {
-            event(new DynamodbQueryExecuted($this, $query_method, $table_name, $params, $time));
-        } catch (\Exception) {
-            // ignored
-        }
+        // Log query.
+        $this->logQuery($query_method, $table_name, $params, $time);
 
         // Process.
         if ($processor_method) {
             return $this->processor->$processor_method($response, $this->model_class);
         } else {
             return $response;
+        }
+    }
+
+    private function logQuery($query_method, $table_name, $params, $time): void {
+        try {
+            $query = trim(sprintf('%s "%s" %s',
+                ucfirst($query_method === 'clientQuery' ? 'query' : $query_method),
+                $table_name.($this->index ? ' ['.$this->index.']' : ''),
+                implode(' ', array_filter([
+                    ! empty($params['ProjectionExpression']) ? 'SELECT '.$params['ProjectionExpression'] : null,
+                    ! empty($params['UpdateExpression']) ? $params['UpdateExpression'] : null,
+                    ! empty($params['KeyConditionExpression']) ? 'WHERE '.$params['KeyConditionExpression'] : null,
+                    ! empty($params['FilterExpression']) ? 'FILTER '.$params['FilterExpression'] : null,
+                ])),
+            ));
+
+            $values = static fn ($values) => array_map(static fn ($value) => match (array_keys($value)[0]) {
+                'N'    => (float) $value['N'],
+                'BOOL' => (bool) $value['BOOL'] ? 'true' : 'false',
+                'NULL' => 'null',
+
+                default => array_first($value),
+            }, $values);
+            $bindings = array_merge(
+                $values($params['Key'] ?? []),
+                $values($params['Item'] ?? []),
+                $params['ExpressionAttributeNames'] ?? [],
+                $values($params['ExpressionAttributeValues'] ?? []),
+            );
+
+            event(new QueryExecuted($query, $bindings, $time, $this->connection));
+
+        } catch (\Exception) {
+            // ignored
         }
     }
 }
