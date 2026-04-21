@@ -6,6 +6,7 @@ use BadMethodCallException;
 use Closure;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Illuminate\Support\Benchmark;
 use Illuminate\Support\Str;
 use Kitar\Dynamodb\Connection;
 
@@ -715,12 +716,8 @@ class Builder extends BaseBuilder
             ];
         }
 
-        $start = microtime(true);
-
         // Execute.
-        $response = $this->connection->$query_method($params);
-
-        $elapsed = round((microtime(true) - $start) * 1000, 2);
+        [$response, $time] =  Benchmark::value(fn () => $this->connection->$query_method($params));
 
         try {
             event(new QueryExecuted(
@@ -742,7 +739,7 @@ class Builder extends BaseBuilder
 
                     default => null,
                 }, $params['ExpressionAttributeValues']))->dot()->toArray(),
-                $elapsed,
+                $time,
                 $this->connection,
             ));
         } catch (\Exception) {
