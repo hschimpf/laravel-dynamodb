@@ -269,14 +269,19 @@ class Model extends BaseModel
             $this->updateTimestamps();
         }
 
-        $attributes = $this->getAttributes();
+        $attributes = array_filter($this->getAttributes(), static function ($value) { return $value !== null; });
+
+        // Validate the key before the early-return guard so that KeyMissingException
+        // is always thrown when a required key attribute is absent or null, even if
+        // all other attributes are also null and $attributes ends up empty.
+        $key = $this->getKey();
 
         if (empty($attributes)) {
             return true;
         }
 
         // Prevent overwrites of an existing item via attribute_not_exists condition.
-        foreach (array_keys($this->getKey()) as $keyName) {
+        foreach (array_keys($key) as $keyName) {
             $query = $query->condition($keyName, 'attribute_not_exists');
         }
 
